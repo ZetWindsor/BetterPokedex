@@ -14,23 +14,23 @@ const Main = () => {
   const pokeFunction = async () => {
     setLoading(true);
     const res = await axios.get(url);
-    //console.log(res.data.results);
     setNextUrl(res.data.next);
     setPreviousUrl(res.data.previous);
     getPokemon(res.data.results);
     setLoading(false);
-    // console.log(pokeData);
   };
-  const getPokemon = async (res) => {
-    res.map(async (item) => {
-      const result = await axios.get(item.url);
-      // console.log(result.data);
-      setPokeData((state) => {
-        state = [...state, result.data];
 
-        return state;
-      });
-    });
+  const getPokemon = async (res) => {
+    const pokemonList = await Promise.all(
+      res.map(async (item) => {
+        const result = await axios.get(item.url);
+        return result.data;
+      })
+    );
+    
+    // Ordinare i dati per ID
+    pokemonList.sort((a, b) => a.id - b.id);
+    setPokeData(pokemonList);
   };
 
   useEffect(() => {
@@ -52,6 +52,7 @@ const Main = () => {
                 setPokeData([]);
                 setUrl(previousUrl);
               }}
+              disabled={!previousUrl}
             >
               Previous
             </button>
@@ -60,8 +61,9 @@ const Main = () => {
                 setPokeData([]);
                 setUrl(nextUrl);
               }}
+              disabled={!nextUrl}
             >
-              next
+              Next
             </button>
           </div>
         </div>
